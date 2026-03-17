@@ -1,194 +1,310 @@
 <!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>業務管理アプリ | 管理者</title>
-  <link rel="stylesheet" href="./styles.css">
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>業務管理アプリ - 管理者</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./common.css?v=4">
+  <link rel="stylesheet" href="./admin.css?v=2">
 </head>
 <body>
-  <div class="app-shell">
-    <aside class="sidebar">
-      <div>
-        <p class="eyebrow">Admin</p>
-        <h1 class="sidebar-title">業務管理</h1>
+<div class="wrap">
+
+<!-- ======= 管理側ログイン ======= -->
+<section id="adminAuth" class="hidden">
+  <div class="topbar"><div class="brand"><div class="logo" style="background:var(--grad2);transform:rotate(0);">⚙</div><div class="t"><h1>管理パネル</h1><p>ユーザー管理</p></div></div>
+    <div class="actions"></div></div>
+  <div class="authGrid"><div class="card"><div class="hd"><div><p class="title">管理側ログイン</p></div></div>
+    <div class="bd"><div class="err" id="adminAuthErr">ログイン失敗</div>
+      <div style="display:grid;gap:10px;"><div><label>ID</label><input id="adminLoginId" autocomplete="username"></div><div><label>PW</label><input id="adminLoginPw" type="password" autocomplete="current-password"></div>
+        <button id="btnAdminLogin" class="btn primary" type="button">ログイン</button>
+</div></div></div></div>
+</section>
+
+<!-- ======= 管理：業務日報管理 ======= -->
+<section id="adminReportMgmt" class="hidden">
+  <div class="topbar"><div class="brand"><div class="logo" style="background:var(--grad2);transform:rotate(0);">📊</div><div class="t"><h1>業務日報管理</h1><p id="armMonthInfo">---</p></div></div>
+    <div class="actions"><button class="btn" id="armLogout">ログアウト</button></div></div>
+  <div class="admin-tabs">
+    <div class="admin-tab active" id="tabRM">📊 業務日報管理</div>
+    <div class="admin-tab" id="tabSM">🌟 スタンプ管理</div>
+    <div class="admin-tab" id="tabTL">📑 業務一覧</div>
+    <div class="admin-tab" id="tabDD">⚙ プルダウン編集</div>
+    <div class="admin-tab" id="tabMC">📋 月末チェック</div>
+  </div>
+  <div id="adminNotif1" class="admin-notification hidden"></div>
+  <!-- Sub-tabs for サマリー / ユーザー追加 -->
+  <div class="sub-tabs" id="armSubTabs">
+    <div class="sub-tab active" id="armSubTabSummary">📊 サマリー</div>
+    <div class="sub-tab" id="armSubTabAddUser">👤 ユーザー追加</div>
+  </div>
+  <div class="card hidden" id="armAddUserCard"><div class="hd"><div><p class="title">ユーザー追加</p></div></div>
+    <div class="bd">
+      <div class="row"><div><label>ユーザーID</label><input id="newUserId" placeholder="user02"></div><div><label>パスワード</label><input id="newUserPw" placeholder="pass02"></div></div>
+      <div class="row" style="margin-top:10px;"><div><label>ユーザー名</label><input id="newUserName" placeholder="山田"></div><div><label>種別</label><select id="newUserType"><option value="学生">学生</option><option value="社会人">社会人</option></select></div></div>
+      <div style="margin-top:10px;"><button id="btnAddUser" class="btn primary" style="width:100%;">追加</button></div>
+    </div></div>
+  <div class="card" id="armSummaryCard"><div class="hd"><div><p class="title">📊 全ユーザー業務日報サマリー</p></div>
+    <div><button class="btn success small" id="armExportExcel">📥 Excel出力</button></div></div>
+    <div class="bd">
+      <div class="filter-bar"><div class="fg"><label>年</label><select id="armFilterYear"></select></div><div class="fg"><label>月</label><select id="armFilterMonth"></select></div><div class="fg"><label>業務形態</label><select id="armFilterType"><option value="出勤">出勤</option><option value="在宅">在宅</option><option value="全て">全て</option></select></div><div class="fg"><label>種別</label><select id="armFilterUserType"><option value="全て">全て</option><option value="社会人">社会人</option><option value="学生">学生</option></select></div></div>
+      <div class="tableWrap"><table><thead><tr><th>#</th><th>ID</th><th>名前</th><th>種別</th><th>勤務</th><th>回数</th><th>給与</th><th>校正/ｲﾝｾﾝﾃｨﾌﾞ</th><th>ｽﾀﾝﾌﾟ</th><th>合計</th><th>交通費</th><th>操作</th></tr></thead><tbody id="armTbody"></tbody></table></div>
+      <div class="sub" style="margin-top:8px;" id="armMeta"></div>
+    </div></div>
+</section>
+
+<!-- ======= 管理：業務日報詳細 ======= -->
+<section id="adminReportDetail" class="hidden">
+  <div class="topbar"><div class="brand"><div class="logo" style="background:linear-gradient(135deg,#ffd93d,#ff9a56);transform:rotate(0);">📋</div><div class="t"><h1>業務日報詳細</h1><p><span id="ardUserName">---</span>（<span id="ardUserId">---</span>）</p></div></div>
+    <div class="actions"><button class="btn success" id="ardExport">📥 エクスポート</button><button class="btn" id="ardBack">戻る</button></div></div>
+  <div class="card"><div class="hd"><div><p class="title">📋 業務日報一覧</p><p class="sub">ダブルクリックで編集（勤務・給与は自動）</p></div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;"><div class="summary-chip" style="border-color:rgba(255,215,61,.3);background:linear-gradient(135deg,rgba(255,215,61,.12),rgba(255,154,86,.08));"><div><div class="sk" id="ardProofLabel">校正ｲﾝｾﾝﾃｨﾌﾞ合計</div><div class="sv" id="ardProofTotal">0円</div></div></div></div></div>
+    <div class="bd">
+      <div class="filter-bar"><div class="fg"><label>年</label><select id="ardFilterYear"></select></div><div class="fg"><label>月</label><select id="ardFilterMonth"></select></div><div class="fg"><label>形態</label><select id="ardFilterType"><option value="出勤">出勤</option><option value="在宅">在宅</option><option value="全て">全て</option></select></div></div>
+      <div class="summary-bar" id="ardSummaryBar"></div>
+      <div class="tableWrap"><table class="report-table"><thead id="ardThead"></thead><tbody id="ardTbody"></tbody></table></div>
+    </div></div>
+</section>
+
+<!-- ======= 管理：業務一覧 ======= -->
+<section id="adminTaskList" class="hidden">
+  <div class="topbar"><div class="brand"><div class="logo" style="background:var(--grad2);transform:rotate(0);">📑</div><div class="t"><h1>業務一覧管理</h1><p>全スタッフの業務</p></div></div>
+    <div class="actions"><button class="btn" id="atlLogout">ログアウト</button></div></div>
+  <div class="admin-tabs">
+    <div class="admin-tab" id="tabRM3">📊 業務日報管理</div>
+    <div class="admin-tab" id="tabSM3">🌟 スタンプ管理</div>
+    <div class="admin-tab active" id="tabTL3">📑 業務一覧</div>
+    <div class="admin-tab" id="tabDD3">⚙ プルダウン編集</div>
+    <div class="admin-tab" id="tabMC3">📋 月末チェック</div>
+  </div>
+  <div id="adminNotif3" class="admin-notification hidden"></div>
+  <div class="card"><div class="hd"><div><p class="title">📊 稼働状況</p></div></div><div class="bd" id="atlWorkloadArea"></div></div>
+  <div class="card"><div class="hd"><div><p class="title">📑 業務一覧</p><p class="sub">ダブルクリックで編集・削除可能</p></div>
+    <div><button class="btn primary small" id="atlAddTask">＋ 新規業務追加</button></div></div>
+    <div class="bd">
+      <div class="sub-tabs" id="atlSubTabs"></div>
+      <div class="filter-bar">
+        <div class="fg"><label>日付種類</label><select id="atlDateType"><option value="requestDate">依頼日</option><option value="deadline">期限日</option><option value="completionDate">完了日</option></select></div>
+        <div class="fg"><label>年</label><select id="atlYear"></select></div>
+        <div class="fg"><label>月</label><select id="atlMonth"></select></div>
+        <div class="fg"><label>担当社員</label><select id="atlEmployee"></select></div>
+        <div class="fg"><label>担当ｽﾀｯﾌ</label><select id="atlStaff"></select></div>
+        <div class="fg"><label>状況</label><select id="atlStatus"><option value="全て">全て</option><option value="依頼前">依頼前</option><option value="依頼中">依頼中</option><option value="期限超過">期限超過</option><option value="完了">完了</option><option value="キャンセル">キャンセル</option></select></div>
       </div>
-      <nav class="nav-list">
-        <button class="nav-item is-active" data-view="dashboard">ダッシュボード</button>
-        <button class="nav-item" data-view="reports">日報管理</button>
-        <button class="nav-item" data-view="tasks">業務管理</button>
-        <button class="nav-item" data-view="monthly">月末チェック</button>
-        <button class="nav-item" data-view="notices">お知らせ管理</button>
-        <button class="nav-item" data-view="users">スタッフ管理</button>
-      </nav>
-      <div class="sidebar-footer">
-        <button type="button" class="btn" id="adminLogoutBtn">ログアウト</button>
-      </div>
-    </aside>
+      <div class="tableWrap"><table><thead id="atlThead"></thead><tbody id="atlTbody"></tbody></table></div>
+    </div></div>
+</section>
 
-    <main class="main-panel">
-      <header class="page-header">
-        <div>
-          <p class="eyebrow">業務管理アプリ</p>
-          <h2 id="adminPageTitle">ダッシュボード</h2>
-          <p class="muted" id="adminPageSubtitle">全体状況を確認できます。</p>
-        </div>
-        <div class="header-meta">
-          <div class="user-chip">管理者</div>
-        </div>
-      </header>
-
-      <section class="view-panel" data-panel="dashboard">
-        <div class="dashboard-grid">
-          <article class="card metrics-card">
-            <div class="metric-row">
-              <div><p class="metric-label">未提出日報</p><p class="metric-value" id="adminMissingReports">0</p></div>
-              <div><p class="metric-label">期限超過タスク</p><p class="metric-value" id="adminOverdueTasks">0</p></div>
-            </div>
-            <div class="metric-row">
-              <div><p class="metric-label">今月の提出件数</p><p class="metric-value" id="adminMonthReports">0</p></div>
-              <div><p class="metric-label">公開中お知らせ</p><p class="metric-value" id="adminActiveNotices">0</p></div>
-            </div>
-          </article>
-
-          <article class="card highlight-card">
-            <p class="section-label">月末チェック</p>
-            <h3 id="monthlyTargetText">今月の集計を確認</h3>
-            <p class="muted">学生は「出勤時給 + 在宅単価」、社会人は「時給」で集計します。</p>
-            <button type="button" class="btn primary" data-jump-view="monthly">月末チェックへ</button>
-          </article>
-        </div>
-      </section>
-
-      <section class="view-panel hidden" data-panel="reports">
-        <article class="card">
-          <div class="section-head">
-            <div><p class="section-label">日報管理</p><h3>提出一覧</h3></div>
-            <div class="filter-inline">
-              <label><span>月</span><input type="month" id="adminReportMonthFilter"></label>
-            </div>
-          </div>
-          <div class="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th>日付</th>
-                  <th>氏名</th>
-                  <th>区分</th>
-                  <th>勤務形態</th>
-                  <th>業務</th>
-                  <th>稼働</th>
-                  <th>数量</th>
-                </tr>
-              </thead>
-              <tbody id="adminReportTableBody"></tbody>
-            </table>
-          </div>
-        </article>
-      </section>
-
-      <section class="view-panel hidden" data-panel="tasks">
-        <article class="card">
-          <div class="section-head">
-            <div><p class="section-label">業務管理</p><h3>業務マスタ</h3></div>
-          </div>
-          <form id="taskMasterForm" class="form-grid compact-form">
-            <label><span>業務名</span><input name="name" required></label>
-            <label><span>報酬方式</span>
-              <select name="priceType">
-                <option value="hourly">時給</option>
-                <option value="piece">単価</option>
-              </select>
-            </label>
-            <label><span>単価/時給</span><input type="number" name="unitPrice" min="0" step="1" required></label>
-            <label><span>対象</span>
-              <select name="workerType">
-                <option value="all">全員</option>
-                <option value="student">学生</option>
-                <option value="employee">社会人</option>
-              </select>
-            </label>
-            <label class="col-span-2"><span>説明</span><textarea name="description" rows="3"></textarea></label>
-            <div class="col-span-2 action-row"><button class="btn primary" type="submit">業務を追加</button></div>
-          </form>
-          <div id="taskMasterMessage" class="inline-message hidden"></div>
-          <div id="adminTaskCards" class="stack-list top-gap"></div>
-        </article>
-      </section>
-
-      <section class="view-panel hidden" data-panel="monthly">
-        <article class="card">
-          <div class="section-head">
-            <div><p class="section-label">月末チェック</p><h3>スタッフ別集計</h3></div>
-            <div class="filter-inline">
-              <label><span>月</span><input type="month" id="adminMonthlyFilter"></label>
-            </div>
-          </div>
-          <div class="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th>氏名</th>
-                  <th>区分</th>
-                  <th>出勤時給分</th>
-                  <th>在宅単価分</th>
-                  <th>社会人時給分</th>
-                  <th>合計</th>
-                  <th>確定</th>
-                </tr>
-              </thead>
-              <tbody id="adminMonthlyTableBody"></tbody>
-            </table>
-          </div>
-        </article>
-      </section>
-
-      <section class="view-panel hidden" data-panel="notices">
-        <article class="card">
-          <div class="section-head">
-            <div><p class="section-label">お知らせ管理</p><h3>連絡事項</h3></div>
-          </div>
-          <form id="noticeForm" class="form-grid compact-form">
-            <label class="col-span-2"><span>タイトル</span><input name="title" required></label>
-            <label class="col-span-2"><span>本文</span><textarea name="body" rows="4" required></textarea></label>
-            <label><span>重要</span>
-              <select name="important"><option value="false">通常</option><option value="true">重要</option></select>
-            </label>
-            <label><span>公開状態</span>
-              <select name="published"><option value="true">公開</option><option value="false">下書き</option></select>
-            </label>
-            <div class="col-span-2 action-row"><button type="submit" class="btn primary">お知らせを保存</button></div>
-          </form>
-          <div id="noticeFormMessage" class="inline-message hidden"></div>
-          <div id="adminNoticeList" class="stack-list top-gap"></div>
-        </article>
-      </section>
-
-      <section class="view-panel hidden" data-panel="users">
-        <article class="card">
-          <div class="section-head">
-            <div><p class="section-label">スタッフ管理</p><h3>ユーザー一覧</h3></div>
-          </div>
-          <div class="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th>氏名</th>
-                  <th>ログインID</th>
-                  <th>区分</th>
-                  <th>スタンプ対象</th>
-                </tr>
-              </thead>
-              <tbody id="adminUsersTableBody"></tbody>
-            </table>
-          </div>
-        </article>
-      </section>
-    </main>
+<!-- ======= 管理：プルダウン編集 ======= -->
+<section id="adminDropdownEdit" class="hidden">
+  <div class="topbar"><div class="brand"><div class="logo" style="background:var(--grad2);transform:rotate(0);">⚙</div><div class="t"><h1>プルダウン編集</h1><p>業務種類・担当社員の管理</p></div></div>
+    <div class="actions"><button class="btn" id="ddeLogout">ログアウト</button></div></div>
+  <div class="admin-tabs">
+    <div class="admin-tab" id="tabRM4">📊 業務日報管理</div>
+    <div class="admin-tab" id="tabSM4">🌟 スタンプ管理</div>
+    <div class="admin-tab" id="tabTL4">📑 業務一覧</div>
+    <div class="admin-tab active" id="tabDD4">⚙ プルダウン編集</div>
+    <div class="admin-tab" id="tabMC4">📋 月末チェック</div>
+  </div>
+  <div id="adminNotif4" class="admin-notification hidden"></div>
+  <div class="grid">
+    <div class="card"><div class="hd"><div><p class="title">業務種類</p><p class="sub">業務種類名と単価（円）</p></div></div>
+      <div class="bd"><div id="ddTaskTypeList"></div>
+        <div class="row3" style="margin-top:10px;"><div><input id="ddNewTaskType" placeholder="新しい業務種類"></div><div><input id="ddNewTaskPrice" type="text" inputmode="numeric" placeholder="単価（円）"></div><div><button class="btn primary" id="ddAddTaskType" style="width:100%;">追加</button></div></div></div></div>
+    <div class="card"><div class="hd"><div><p class="title">担当社員</p></div></div>
+      <div class="bd"><div id="ddEmployeeList"></div>
+        <div class="row" style="margin-top:10px;"><div><input id="ddNewEmployee" placeholder="新しい担当社員名"></div><div><button class="btn primary" id="ddAddEmployee" style="width:100%;">追加</button></div></div></div></div>
+  </div>
+  <div class="card"><div class="hd"><div><p class="title">スタッフ一覧</p><p class="sub">ID・PW・スタッフ名・種別・時給の編集・削除</p></div></div>
+    <div class="bd"><div id="ddStaffList"></div></div></div>
+  <div class="card"><div class="hd"><div><p class="title">🔐 管理者アカウント</p><p class="sub">管理画面のログインID・パスワードの変更</p></div></div>
+    <div class="bd">
+      <div class="row"><div class="form-group"><label>管理者ID</label><input id="adminCredId" placeholder="管理者ID"></div>
+        <div class="form-group">
+    <label>旧パスワード（現在）</label>
+    <input id="adminCredOldPw" type="password" placeholder="旧パスワード">
   </div>
 
-  <script src="./config.js"></script>
-  <script src="./shared.js"></script>
-  <script src="./admin-app.js"></script>
+  <div class="form-group">
+    <label>新パスワード</label>
+    <input id="adminCredPw" type="password" placeholder="新パスワード">
+  </div>
+</div></div>
+      <button class="btn primary" id="adminCredSave" style="width:100%;margin-top:10px;">変更を保存 ✅</button>
+    </div></div>
+</section>
+
+<!-- ======= 管理：スタンプカード ======= -->
+<section id="adminHome" class="hidden">
+  <div class="topbar"><div class="brand"><div class="logo" style="background:var(--grad2);transform:rotate(0);">⚙</div><div class="t"><h1>管理TOP</h1><p id="adminMonthInfo">---</p></div></div>
+    <div class="actions"><button class="btn" id="adminLogout">ログアウト</button><button class="btn" id="btnExport">エクスポート</button><button class="btn danger" id="btnResetAll">全初期化</button></div></div>
+  <div class="admin-tabs">
+    <div class="admin-tab" id="tabRM2">📊 業務日報管理</div>
+    <div class="admin-tab active" id="tabSM2">🌟 スタンプ管理</div>
+    <div class="admin-tab" id="tabTL2">📑 業務一覧</div>
+    <div class="admin-tab" id="tabDD2">⚙ プルダウン編集</div>
+    <div class="admin-tab" id="tabMC2">📋 月末チェック</div>
+  </div>
+  <div id="adminNotif2" class="admin-notification hidden"></div>
+  <div class="card" style="margin-bottom:12px;border:2px solid rgba(255,154,86,.25);background:linear-gradient(135deg,rgba(255,248,240,.95),rgba(255,255,255,.9));">
+<div class="bd" style="text-align:center;padding:16px;">
+<div style="font-family:var(--font-display);font-size:13px;color:var(--muted);margin-bottom:4px;">📝 今日の合言葉（学生の出勤補助）</div>
+<div id="adminTodayPassword" style="font-size:28px;font-weight:900;font-family:var(--font-display);color:var(--orange);letter-spacing:4px;">---</div>
+</div></div>
+<div class="card"><div class="hd"><div><p class="title">ユーザー一覧</p></div></div>
+    <div class="bd"><div class="tableWrap"><table><thead><tr><th>#</th><th>ID</th><th>名前</th><th>種別</th><th>今週</th><th>月間</th><th>累計</th><th>ランク</th><th>単価</th><th>ｲﾝｾﾝﾃｨﾌﾞ</th><th>申請</th><th>編集</th></tr></thead><tbody id="adminTbody"></tbody></table></div>
+      <div class="sub" style="margin-top:8px;" id="adminMeta"></div></div></div>
+  <div class="card"><div class="hd"><div><p class="title">📢 お知らせ管理</p><p class="sub">スタッフ画面に表示される簡易お知らせです</p></div></div>
+    <div class="bd">
+      <div class="notice-form-grid">
+        <div class="form-group"><label>タイトル</label><input id="adminNoticeTitle" placeholder="例：今週の日報締切"></div>
+        <div class="form-group"><label>対象</label><select id="adminNoticeTarget"><option value="全員">全員</option><option value="学生">学生のみ</option><option value="社会人">社会人のみ</option></select></div>
+        <div class="form-group"><label>掲載開始</label><input id="adminNoticeStart" type="date"></div>
+        <div class="form-group"><label>掲載終了</label><input id="adminNoticeEnd" type="date"></div>
+      </div>
+      <div class="form-group" style="margin-top:10px;"><label>本文</label><textarea id="adminNoticeBody" placeholder="お知らせ内容を入力"></textarea></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:10px;"><button class="btn primary" id="btnSaveAdminNotice">お知らせを追加</button><button class="btn ghost" id="btnClearAdminNotice">入力をクリア</button></div>
+      <div style="margin-top:14px;" id="adminNoticeList" class="notice-board"></div>
+    </div></div>
+</section>
+
+<!-- ======= 管理：ユーザー編集 ======= -->
+<section id="adminEdit" class="hidden">
+  <div class="topbar"><div class="brand"><div class="logo" style="background:linear-gradient(135deg,#ffd93d,#ff9a56);transform:rotate(0);">✏</div><div class="t"><h1>ユーザー編集</h1><p><span id="editUserName">---</span>（<span id="editUserId">---</span>）</p></div></div>
+    <div class="actions"><button class="btn" id="backToAdminHome">管理TOPへ</button><button class="btn danger" id="resetThisUser">初期化</button></div></div>
+  <div class="grid">
+    <div class="card"><div class="hd"><div><p class="title">編集パネル</p></div><span class="tag">ADMIN</span></div>
+      <div class="bd">
+        <div class="form-section"><div class="form-title">ユーザー情報</div>
+          <div class="row" style="margin-bottom:10px;"><div class="form-group"><label>ID</label><input id="editUid"></div><div class="form-group"><label>名前</label><input id="editUname"></div></div>
+          <div class="row" style="margin-bottom:10px;"><div class="form-group"><label>PW</label><input id="editUpw" type="text"></div><div class="form-group"><label>種別</label><select id="editUserType"><option value="学生">学生</option><option value="社会人">社会人</option></select></div></div>
+          <button id="btnSaveUserInfo" class="btn success" style="width:100%;">情報を保存</button></div>
+        <div class="statgrid" style="margin-top:12px;">
+          <div class="stat"><div class="k">累計</div><div class="v"><span id="eTotal">0</span><span class="u">pt</span></div></div>
+          <div class="stat"><div class="k">今月</div><div class="v"><span id="eMonth">0</span><span class="u">回</span></div></div>
+          <div class="stat"><div class="k">今週</div><div class="v"><span id="eWeek">0</span><span class="u">回</span></div></div>
+          <div class="stat"><div class="k">表示月</div><div class="v" style="font-size:14px;"><span id="eMonthKey">----</span></div></div></div>
+        <div id="incentiveDisplay" style="margin-top:12px;"></div>
+        <div class="help"><b>ランク</b>：R1(~50)300円/R2(~150)400円/R3(~300)500円/R4(~500)600円/R5(~800)700円/R6(801~)800円<br><b>ｲﾝｾﾝﾃｨﾌﾞ</b>：25回=5000円/50回=+回数×100円/201以降50毎=40000円<br><b>緊急</b>=3pt</div>
+      </div></div>
+    <div class="card"><div class="bd">
+      <div class="calTop"><div><div class="monthLabel" id="editMonthLabel">----</div><div class="sub">1回目=通常/2回目=緊急(赤)/3回目=解除</div></div>
+        <div class="calNav"><button id="ePrev" class="btn small">◀</button><button id="eThis" class="btn primary small">今月</button><button id="eNext" class="btn small">▶</button></div></div>
+      <div class="calGrid" id="editCal"></div>
+      <div class="stamp-legend" style="margin-top:10px;"><div class="stamp-legend-item"><div class="dot normal" style="width:16px;height:16px;border-radius:6px;background:var(--grad1);"></div><span>通常(1pt)</span></div><div class="stamp-legend-item"><div class="dot emg" style="width:16px;height:16px;border-radius:6px;background:linear-gradient(135deg,#ff4757,#c0392b);"></div><span>緊急(3pt)</span></div></div>
+    </div></div>
+  </div>
+</section>
+
+<!-- ======= 管理：月末チェック ======= -->
+<section id="adminMonthCheck" class="hidden">
+  <div class="topbar"><div class="brand"><div class="logo" style="background:var(--grad2);transform:rotate(0);">📋</div><div class="t"><h1>月末チェック</h1><p>業務日報と業務一覧の照合</p></div></div>
+    <div class="actions"><button class="btn" id="mcLogout">ログアウト</button></div></div>
+  <div class="admin-tabs">
+    <div class="admin-tab" id="tabRM5">📊 業務日報管理</div>
+    <div class="admin-tab" id="tabSM5">🌟 スタンプ管理</div>
+    <div class="admin-tab" id="tabTL5">📑 業務一覧</div>
+    <div class="admin-tab" id="tabDD5">⚙ プルダウン編集</div>
+    <div class="admin-tab active" id="tabMC5">📋 月末チェック</div>
+  </div>
+  <div id="adminNotif5" class="admin-notification hidden"></div>
+  <div class="card"><div class="hd"><div><p class="title">📋 月末チェック一覧</p><p class="sub">在宅業務の日報と業務管理の工数照合</p></div></div>
+    <div class="bd">
+      <div class="filter-bar"><div class="fg"><label>年</label><select id="mcYear"></select></div><div class="fg"><label>月</label><select id="mcMonth"></select></div></div>
+      <div class="tableWrap"><table><thead id="mcThead"></thead><tbody id="mcTbody"></tbody></table></div>
+      <div id="mcConfirmArea" style="margin-top:12px;"></div>
+    </div></div>
+  <div class="card hidden" id="mcDetailCard"><div class="hd"><div><p class="title" id="mcDetailTitle">詳細</p></div>
+    <div><button class="btn small" id="mcDetailClose">閉じる</button></div></div>
+    <div class="bd"><div class="tableWrap"><table><thead id="mcDetailThead"></thead><tbody id="mcDetailTbody"></tbody></table></div></div></div>
+</section>
+</div>
+
+<!-- Overlays -->
+<div class="overlay" id="overlay" style="display:none;"><div class="modal"><div class="mh"><div><h3 id="mTitle">---</h3><div class="sub" id="mSub">---</div></div><button id="mClose" class="btn small">閉じる</button></div>
+  <div class="mb"><p id="mBody">---</p><div class="celebrate"><p class="big" id="mBig">🎉</p><div class="small" id="mSmall">---</div></div></div></div></div>
+
+<div class="overlay" id="fileOverlay" style="display:none;">
+  <div class="modal" style="max-width:400px;">
+    <div class="mh"><div><h3>📎 ファイル提出</h3><p class="sub">複数ファイルを添付できます</p></div><button class="btn small" id="fileOverlayClose">閉じる</button></div>
+    <div class="mb">
+      <div class="drop-zone" id="dropZone"><div class="dz-icon">📂</div><div class="dz-text">ファイルをドラッグ＆ドロップ</div><div class="dz-file" id="dzFileName"></div>
+        <input type="file" id="fileInput" multiple style="display:none;"></div>
+      <div class="file-list" id="fileList"></div>
+      <button class="btn success" id="fileSubmitBtn" style="width:100%;margin-top:12px;" disabled>完了 ✅</button>
+      <button class="btn primary" id="fileSubmitDirectBtn" type="button" style="width:100%;margin-top:10px;">提出（ファイルなしでも完了）</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="taskAddOverlay" style="display:none;">
+  <div class="modal" style="max-width:600px;">
+    <div class="mh"><div><h3 id="taskAddTitle">📑 新規業務追加</h3></div><button class="btn small" id="taskAddClose">閉じる</button></div>
+    <div class="mb" style="max-height:70vh;overflow-y:auto;">
+      <div class="row" style="margin-bottom:10px;"><div class="form-group"><label>業務形態</label><select id="taWorkType"><option value="出勤">出勤</option><option value="在宅">在宅</option></select></div><div class="form-group"><label>状況</label><select id="taStatus"><option>依頼前</option><option>依頼中</option><option>期限超過</option><option>完了</option><option>キャンセル</option></select></div></div>
+      <div class="row" style="margin-bottom:10px;"><div class="form-group"><label>依頼日</label><input type="date" id="taRequestDate"></div><div class="form-group"><label>期限日</label><input type="date" id="taDeadline"></div></div>
+      <div class="row" style="margin-bottom:10px;"><div class="form-group"><label>完了日</label><input type="date" id="taCompletionDate"></div><div class="form-group"><label>工数</label><input type="number" id="taManHours" min="0" value="1"></div></div>
+      <div class="form-group"><label>テキストコード</label><div id="taTextCodesArea"></div></div>
+      <div class="row" style="margin-bottom:10px;"><div class="form-group"><label>業務種類</label><select id="taTaskType"></select></div><div class="form-group"><label>担当社員</label><select id="taEmployee"></select></div></div>
+      <div class="form-group"><label>担当スタッフ</label><select id="taStaff"></select></div>
+      <div class="form-group"><label>内容</label><textarea id="taContent" placeholder="内容を記入"></textarea></div>
+      <div class="form-group"><label>備考</label><textarea id="taNote" placeholder="備考を記入" style="min-height:50px;"></textarea></div>
+      <button class="btn primary" id="taskAddSave" style="width:100%;margin-top:10px;">保存 ✅</button>
+    </div>
+  </div>
+</div>
+
+<div class="dd-edit-overlay" id="ddEditOverlay" style="display:none;">
+  <div class="dd-edit-modal">
+    <div class="mh"><div><h3 id="ddEditTitle">業務種類を編集</h3></div><button class="btn small" id="ddEditClose">閉じる</button></div>
+    <div class="mb" style="display:grid;gap:10px;">
+      <div><label>業務種類名</label><input id="ddEditName" placeholder="業務種類名"></div>
+      <div><label>単価（円）</label><input id="ddEditPrice" type="text" inputmode="numeric" placeholder="例：500"></div>
+      <button class="btn primary" id="ddEditSave" style="width:100%;">保存 ✅</button>
+    </div>
+  </div>
+</div>
+
+<!-- Staff Edit Overlay -->
+<div class="dd-edit-overlay" id="staffEditOverlay" style="display:none;">
+  <div class="dd-edit-modal" style="max-width:450px;">
+    <div class="mh"><div><h3>👤 スタッフ情報編集</h3></div><button class="btn small" id="staffEditClose">閉じる</button></div>
+    <div class="mb" style="display:grid;gap:10px;">
+      <div class="row"><div><label>ログインID</label><input id="seId" placeholder="ログインID"></div><div><label>パスワード</label><input id="sePw" type="text" placeholder="パスワード"></div></div>
+      <div class="row"><div><label>スタッフ名</label><input id="seName" placeholder="スタッフ名"></div><div><label>種別</label><select id="seType"><option value="学生">学生</option><option value="社会人">社会人</option></select></div></div>
+      <div><label>時給（円）</label><input id="seRate" type="text" inputmode="numeric" placeholder="例：1300"></div>
+      <button class="btn primary" id="staffEditSave" style="width:100%;">保存 ✅</button>
+    </div>
+  </div>
+</div>
+
+<script src="./config.js?v=3"></script>
+<script src="./common.js?v=4"></script>
+<script src="./admin.js?v=2"></script>
+
+</div>
+
+<!-- API Setup Overlay -->
+<div class="overlay" id="apiSetupOverlay" style="display:none;">
+  <div class="modal" style="max-width:450px;">
+    <div class="mh"><div><h3>⚙ API接続設定</h3><p class="sub">Google Apps Script Web App URL</p></div><button class="btn small" id="apiSetupClose">閉じる</button></div>
+    <div class="mb" style="text-align:left;">
+      <div style="margin-bottom:10px;"><label>API URL</label><input id="apiUrlInput" placeholder="https://script.google.com/macros/s/.../exec"></div>
+      <div id="apiSetupStatus" style="font-size:12px;margin-bottom:10px;">未設定</div>
+      <div style="display:flex;gap:8px;"><button class="btn primary" id="apiSetupSave" style="flex:1;">接続テスト＆保存</button><button class="btn danger" id="apiSetupClear">切断</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="sync-badge" id="syncBar">
+  <span class="sync-dot loading" id="syncDot"></span>
+  <span id="syncMsg">接続中...</span>
+  <span id="syncTime" style="font-size:10px;color:var(--muted);margin-left:4px;"></span>
+  <button class="btn small ghost" id="syncSetup" style="font-size:10px;padding:2px 6px;margin-left:4px;">⚙</button>
+  <button class="btn small ghost" id="syncManual" style="font-size:10px;padding:2px 6px;">🔄</button>
+</div>
+
 </body>
 </html>

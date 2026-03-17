@@ -1,227 +1,217 @@
 <!doctype html>
 <html lang="ja">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>業務管理アプリ | スタッフ</title>
-  <link rel="stylesheet" href="./styles.css">
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width,initial-scale=1"/>
+  <title>業務管理アプリ - スタッフ</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700;900&family=Fredoka:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./common.css?v=4">
+  <link rel="stylesheet" href="./staff.css?v=2">
 </head>
 <body>
-  <div class="app-shell">
-    <aside class="sidebar">
-      <div>
-        <p class="eyebrow">Staff</p>
-        <h1 class="sidebar-title">業務管理</h1>
-      </div>
-      <nav class="nav-list">
-        <button class="nav-item is-active" data-view="dashboard">ダッシュボード</button>
-        <button class="nav-item" data-view="report-form">日報入力</button>
-        <button class="nav-item" data-view="report-list">日報履歴</button>
-        <button class="nav-item" data-view="task-list">業務一覧</button>
-        <button class="nav-item" data-view="notices">お知らせ</button>
-      </nav>
-      <div class="sidebar-footer">
-        <button type="button" class="btn" id="staffLogoutBtn">ログアウト</button>
-      </div>
-    </aside>
+<div class="wrap">
 
-    <main class="main-panel">
-      <header class="page-header">
-        <div>
-          <p class="eyebrow">業務管理アプリ</p>
-          <h2 id="staffPageTitle">ダッシュボード</h2>
-          <p class="muted" id="staffPageSubtitle">今日やることを確認できます。</p>
-        </div>
-        <div class="header-meta">
-          <div class="user-chip"><span id="staffNameLabel">---</span></div>
-          <div class="status-chip" id="workerTypeBadge">---</div>
-        </div>
-      </header>
+<!-- ======= スタッフ側：ログイン ======= -->
+<section id="userAuth" class="hidden">
+  <div class="topbar"><div class="brand"><div class="logo">🌟</div><div class="t"><h1>業務管理</h1><p>ログインしてください</p></div></div>
+    <div class="actions"></div></div>
+  <div class="authGrid"><div class="card"><div class="hd"><div><p class="title">ログイン</p><p class="sub">IDとパスワードを入力してね</p></div></div>
+    <div class="bd"><div class="err" id="userAuthErr">ログインに失敗しました。</div>
+      <div style="display:grid;gap:10px;">
+        <div><label>ログインID</label><input id="userLoginId" autocomplete="username" placeholder="IDを入力"></div>
+        <div><label>パスワード</label><input id="userLoginPw" type="password" autocomplete="current-password" placeholder="パスワードを入力"></div>
+        <button id="btnUserLogin" class="btn primary" type="button" style="width:100%;font-size:15px;padding:12px;">ログイン 🚀</button>
 
-      <section class="view-panel" data-panel="dashboard">
-        <div class="dashboard-grid">
-          <article class="card highlight-card">
-            <p class="section-label">今日の状況</p>
-            <h3 id="todayStatusTitle">未入力</h3>
-            <p class="muted" id="todayStatusText">本日の日報を入力してください。</p>
-            <div id="studentStampArea"></div>
-          </article>
 
-          <article class="card metrics-card">
-            <div class="metric-row">
-              <div>
-                <p class="metric-label">今月の日報数</p>
-                <p class="metric-value" id="monthReportCount">0</p>
-              </div>
-              <div>
-                <p class="metric-label">本日の勤務形態</p>
-                <p class="metric-value small" id="todayWorkMode">未入力</p>
-              </div>
-            </div>
-            <div class="metric-row">
-              <div>
-                <p class="metric-label">今月の稼働時間</p>
-                <p class="metric-value" id="monthWorkHours">0h</p>
-              </div>
-              <div>
-                <p class="metric-label">未確認お知らせ</p>
-                <p class="metric-value" id="noticeCount">0</p>
-              </div>
-            </div>
-          </article>
-        </div>
+      </div></div></div></div>
+</section>
 
-        <div class="two-column-grid">
-          <article class="card">
-            <div class="section-head">
-              <div>
-                <p class="section-label">優先タスク</p>
-                <h3>自分の業務</h3>
-              </div>
-              <button type="button" class="btn ghost" data-jump-view="task-list">業務一覧へ</button>
-            </div>
-            <div id="staffDashboardTasks" class="stack-list"></div>
-          </article>
-
-          <article class="card">
-            <div class="section-head">
-              <div>
-                <p class="section-label">連絡事項</p>
-                <h3>最新のお知らせ</h3>
-              </div>
-              <button type="button" class="btn ghost" data-jump-view="notices">すべて見る</button>
-            </div>
-            <div id="staffDashboardNotices" class="stack-list"></div>
-          </article>
-        </div>
-      </section>
-
-      <section class="view-panel hidden" data-panel="report-form">
-        <article class="card form-card">
-          <div class="section-head">
-            <div>
-              <p class="section-label">日報入力</p>
-              <h3>今日の業務を記録</h3>
-            </div>
-          </div>
-
-          <form id="dailyReportForm" class="form-grid">
-            <label>
-              <span>日付</span>
-              <input type="date" name="date" required>
-            </label>
-            <label>
-              <span>勤務形態</span>
-              <select name="workMode" required>
-                <option value="office">出勤</option>
-                <option value="remote">在宅</option>
-              </select>
-            </label>
-            <label>
-              <span>開始時刻</span>
-              <input type="time" name="startTime" required>
-            </label>
-            <label>
-              <span>終了時刻</span>
-              <input type="time" name="endTime" required>
-            </label>
-            <label>
-              <span>休憩（分）</span>
-              <input type="number" name="breakMinutes" min="0" step="15" value="60">
-            </label>
-            <label>
-              <span>交通費（出勤時のみ）</span>
-              <input type="number" name="transportCost" min="0" step="1" value="0">
-            </label>
-            <label class="col-span-2">
-              <span>主な業務</span>
-              <select name="taskId" id="staffTaskSelect"></select>
-            </label>
-            <label>
-              <span>件数</span>
-              <input type="number" name="quantity" min="0" step="1" value="1">
-            </label>
-            <label>
-              <span>稼働時間（自動計算）</span>
-              <input type="text" name="workHoursLabel" readonly>
-            </label>
-            <label class="col-span-2">
-              <span>業務内容</span>
-              <textarea name="summary" rows="5" placeholder="本日の対応内容や進捗を入力"></textarea>
-            </label>
-            <label class="col-span-2">
-              <span>備考</span>
-              <textarea name="memo" rows="3" placeholder="補足があれば入力"></textarea>
-            </label>
-            <div class="col-span-2 action-row">
-              <button type="submit" class="btn primary">日報を保存</button>
-              <button type="button" class="btn" id="reportFormResetBtn">リセット</button>
-            </div>
-          </form>
-          <div id="reportFormMessage" class="inline-message hidden"></div>
-        </article>
-      </section>
-
-      <section class="view-panel hidden" data-panel="report-list">
-        <article class="card">
-          <div class="section-head">
-            <div>
-              <p class="section-label">日報履歴</p>
-              <h3>自分の提出履歴</h3>
-            </div>
-            <div class="filter-inline">
-              <label>
-                <span>月</span>
-                <input type="month" id="staffReportMonthFilter">
-              </label>
-            </div>
-          </div>
-          <div class="table-container">
-            <table>
-              <thead>
-                <tr>
-                  <th>日付</th>
-                  <th>勤務形態</th>
-                  <th>業務</th>
-                  <th>稼働</th>
-                  <th>数量</th>
-                  <th>報酬方式</th>
-                </tr>
-              </thead>
-              <tbody id="staffReportTableBody"></tbody>
-            </table>
-          </div>
-        </article>
-      </section>
-
-      <section class="view-panel hidden" data-panel="task-list">
-        <article class="card">
-          <div class="section-head">
-            <div>
-              <p class="section-label">業務一覧</p>
-              <h3>登録済みの業務</h3>
-            </div>
-          </div>
-          <div id="staffTaskCards" class="stack-list"></div>
-        </article>
-      </section>
-
-      <section class="view-panel hidden" data-panel="notices">
-        <article class="card">
-          <div class="section-head">
-            <div>
-              <p class="section-label">お知らせ</p>
-              <h3>管理者からの連絡</h3>
-            </div>
-          </div>
-          <div id="staffNoticeList" class="stack-list"></div>
-        </article>
-      </section>
-    </main>
+<!-- ======= スタッフ側：スタンプ画面（学生の出勤補助） ======= -->
+<section id="userStamp" class="hidden">
+  <div class="topbar"><div class="brand"><div class="logo">🌟</div><div class="t"><h1>出勤スタンプ（学生向け）</h1><p><span id="stampUserName">---</span> さん</p></div></div>
+    <div class="actions"><button class="btn" type="button" id="stampLogout">ログアウト</button></div></div>
+  <div class="stamp-screen">
+    <div class="greeting">出勤したら忘れずに記録</div>
+    <div class="date-display" id="stampDate">--月--日（-）</div>
+    <div id="stampRankBadge"></div>
+    <button class="big-stamp-btn" type="button" id="bigStampBtn"><span class="emoji">👆</span><span class="label">出勤スタンプ</span></button>
+    <div id="stampAlreadyMsg" class="hidden" style="color:var(--muted);font-size:14px;font-family:var(--font-display);">✅ 今日はスタンプ済みです！</div>
+    <div class="rank-info" id="stampRankInfo"></div>
+    <div class="stamp-actions">
+      <button class="btn ghost" type="button" id="goToCalendarFromStamp">📅 カレンダー</button>
+      <button class="btn primary" type="button" id="stampGoReport">📝 本日の日報</button>
+      <button class="btn ghost" type="button" id="stampGoReportList">📋 日報一覧</button>
+      <button class="btn ghost" type="button" id="stampGoTaskList">📑 業務一覧</button>
+    </div>
   </div>
+</section>
 
-  <script src="./config.js"></script>
-  <script src="./shared.js"></script>
-  <script src="./staff-app.js"></script>
+<!-- ======= スタッフ側：カレンダー ======= -->
+<section id="userHome" class="hidden">
+  <div class="topbar"><div class="brand"><div class="logo">🌟</div><div class="t"><h1>業務管理</h1><p><span id="userNameLabel">---</span> さん</p></div></div>
+    <div class="actions"><button class="btn ghost" type="button" id="goToStamp">出勤記録 👆</button><button class="btn" type="button" id="userLogout">ログアウト</button></div></div>
+  <div id="stampDoneBanner" class="stamp-done-banner hidden"><div class="sdb-emoji">✅</div><div class="sdb-text">今日のスタンプ完了！</div><div class="sdb-sub">おつかれさまです！</div></div>
+  <div class="grid">
+    <div class="card"><div class="hd"><div><p class="title">📊 マイステータス</p></div></div>
+      <div class="bd">
+        <div id="userRankArea" style="margin-bottom:12px;"></div>
+        <div class="statgrid">
+          <div class="stat"><div class="k">累計</div><div class="v"><span id="uTotal">0</span><span class="u">pt</span></div></div>
+          <div class="stat"><div class="k">今月</div><div class="v"><span id="uMonth">0</span><span class="u">回</span></div></div>
+        </div>
+        <div id="userProgressArea" style="margin-top:12px;"></div>
+        <button id="btnGoReport" class="btn primary" type="button" style="width:100%;font-size:14px;padding:12px;margin-top:14px;">📝 本日の業務日報を入力</button>
+        <button id="btnGoReportList" class="btn ghost" type="button" style="width:100%;font-size:13px;padding:10px;margin-top:8px;">📋 業務日報一覧</button>
+        <button id="btnGoTaskListFromCal" class="btn ghost" type="button" style="width:100%;font-size:13px;padding:10px;margin-top:8px;">📑 業務一覧</button>
+        <div id="stampRequestArea"></div>
+        <div class="helper-box" id="workModeGuide"></div>
+      </div></div>
+    <div class="card"><div class="bd">
+      <div class="calTop"><div><div class="monthLabel" id="userMonthLabel">----</div></div>
+        <div class="calNav"><button id="uPrev" class="btn small">◀</button><button id="uThis" class="btn primary small">今月</button><button id="uNext" class="btn small">▶</button></div></div>
+      <div class="calGrid" id="userCal"></div>
+      <div id="stampApplyBar" class="hidden"></div>
+      </div></div>
+    <div class="card"><div class="hd"><div><p class="title">📢 お知らせ</p><p class="sub">管理者からのお知らせ</p></div></div><div class="bd"><div id="staffNoticeBoard" class="notice-board"></div></div></div>
+  </div>
+</section>
+
+<!-- ======= 業務日報入力 ======= -->
+<section id="reportInput" class="hidden">
+  <div class="topbar"><div class="brand"><div class="logo" style="background:var(--grad3);transform:rotate(0);">📝</div><div class="t"><h1>業務日報入力</h1><p><span id="reportUserName">---</span> さん</p></div></div>
+    <div class="actions"><button class="btn ghost" type="button" id="reportBackToCal">戻る</button></div></div>
+  <div class="card"><div class="hd"><div><p class="title">📋 業務日報</p></div></div>
+    <div class="bd">
+      <div class="form-section"><div class="form-title">基本情報</div>
+        <div class="helper-box" id="rpModeHint">勤務形態とユーザー種別に応じて、時給または単価で計算されます。</div>
+        <div class="row" style="margin-bottom:10px;"><div class="form-group"><label>日付</label><input type="date" id="rpDate"></div><div class="form-group"><label>勤務形態</label><select id="rpWorkType"><option value="出勤">出勤</option><option value="在宅">在宅</option></select></div></div>
+        <div class="row" style="margin-bottom:10px;"><div class="form-group"><label>開始</label><div class="time-row"><select id="rpStartH"></select><span>:</span><select id="rpStartM"></select></div></div><div class="form-group"><label>終了</label><div class="time-row"><select id="rpEndH"></select><span>:</span><select id="rpEndM"></select></div></div></div>
+        <div class="row" style="margin-bottom:10px;"><div class="form-group"><label>休憩</label><select id="rpBreak"></select></div><div class="form-group"><label>勤務時間</label><input id="rpWorkTime" readonly style="background:rgba(255,248,240,.9);font-weight:700;"></div></div></div>
+      <div class="form-section" id="taskSection"><div class="form-title">業務（在宅）</div>
+        <div class="row" style="margin-bottom:10px;"><div class="form-group"><label>業務種類</label><select id="rpTaskType"></select></div><div class="form-group"><label>工数</label><select id="rpManHours"></select></div></div></div>
+      <div class="form-section" id="officeSection"><div class="form-title">出勤時の情報</div>
+        <div class="row" style="margin-bottom:10px;"><div class="form-group"><label>交通費</label><input id="rpTransport" type="text" inputmode="numeric" placeholder="例：500"></div><div class="form-group"><label>業務ID</label><select id="rpBizId"></select></div></div>
+        <div class="row" style="margin-bottom:10px;"><div class="form-group"><label>商品ID</label><select id="rpProductId"></select></div><div class="form-group"><label>サービスID</label><select id="rpServiceId"></select></div></div>
+        <div class="row" style="margin-bottom:10px;"><div class="form-group"><label>テキストコード</label><input id="rpTextCode" type="text" inputmode="numeric" placeholder="テキストコード"></div><div class="form-group"><label>年度</label><select id="rpYear"></select></div></div></div>
+      <div class="form-section"><div class="form-title">業務内容</div><div class="form-group"><label>業務内容</label><textarea id="rpContent" placeholder="業務内容を記入"></textarea></div></div>
+      <button id="btnAddAndContinue" class="btn ghost" type="button" style="width:100%;font-size:13px;padding:10px;margin-top:12px;border-color:rgba(77,150,255,.3);color:var(--blue);">➕ 同日の業務を追加（続けて入力）</button>
+      <button id="btnAddReport" class="btn primary" type="button" style="width:100%;font-size:14px;padding:12px;margin-top:8px;">入力完了 ✅</button>
+    </div></div>
+</section>
+
+<!-- ======= 業務日報確認 ======= -->
+<section id="reportConfirm" class="hidden">
+  <div class="topbar"><div class="brand"><div class="logo" style="background:var(--grad3);transform:rotate(0);">📋</div><div class="t"><h1>業務日報確認</h1><p><span id="confirmUserName">---</span> さん</p></div></div>
+    <div class="actions">
+<button class="btn ghost" type="button" id="confirmBackToCal">📅 カレンダー</button>
+<button class="btn ghost" type="button" id="confirmGoTask">📑 業務一覧</button>
+<button class="btn" type="button" id="confirmLogout">ログアウト</button></div></div>
+  <div class="card"><div class="hd"><div><p class="title">📋 業務日報一覧</p></div></div>
+    <div class="bd">
+      <div class="filter-bar"><div class="fg"><label>年</label><select id="rcFilterYear"></select></div><div class="fg"><label>月</label><select id="rcFilterMonth"></select></div><div class="fg"><label>業務形態</label><select id="rcFilterType"><option value="出勤">出勤</option><option value="在宅">在宅</option><option value="全て">全て</option></select></div></div>
+      <div class="summary-bar" id="rcSummaryBar"></div>
+      <div class="tableWrap"><table class="report-table"><thead id="reportThead"></thead><tbody id="reportTbody"></tbody></table></div>
+      <button id="btnNewReport" class="btn primary" type="button" style="width:100%;margin-top:12px;">➕ 新しい日報を追加</button>
+    </div></div>
+</section>
+
+<!-- ======= スタッフ側：業務一覧 ======= -->
+<section id="staffTaskList" class="hidden">
+  <div class="topbar"><div class="brand"><div class="logo" style="background:var(--grad3);transform:rotate(0);">📑</div><div class="t"><h1>業務一覧</h1><p><span id="stlUserName">---</span> さん</p></div></div>
+    <div class="actions">
+<button class="btn ghost" type="button" id="stlBackToReport" style="display:none;">📋 業務日報</button>
+<button class="btn ghost" type="button" id="stlBack">📅 カレンダー</button>
+<button class="btn" type="button" id="stlLogout">ログアウト</button></div></div>
+  <div class="card"><div class="hd"><div><p class="title">📊 稼働状況</p></div></div><div class="bd" id="stlWorkloadArea"></div></div>
+  <div class="card"><div class="hd"><div><p class="title">📑 業務一覧</p></div>
+    <div><button class="btn ghost small" id="stlPriceListToggle">💰 業務単価一覧</button></div></div>
+    <div class="bd">
+      <div id="stlPriceListArea" class="hidden"></div>
+      <div class="filter-bar">
+        <div class="fg"><label>日付種類</label><select id="stlDateType"><option value="requestDate">依頼日</option><option value="deadline">期限日</option><option value="completionDate">完了日</option></select></div>
+        <div class="fg"><label>年</label><select id="stlYear"></select></div>
+        <div class="fg"><label>月</label><select id="stlMonth"></select></div>
+        <div class="fg"><label>担当ｽﾀｯﾌ</label><select id="stlStaff"></select></div>
+        <div class="fg"><label>状況</label><select id="stlStatus"><option value="全て">全て</option><option value="依頼前">依頼前</option><option value="依頼中">依頼中</option><option value="期限超過">期限超過</option><option value="完了">完了</option><option value="キャンセル">キャンセル</option></select></div>
+      </div>
+      <div class="tableWrap"><table><thead id="stlThead"></thead><tbody id="stlTbody"></tbody></table></div>
+    </div></div>
+</section>
+</div>
+
+<!-- Overlays -->
+<div class="overlay" id="overlay" style="display:none;"><div class="modal"><div class="mh"><div><h3 id="mTitle">---</h3><div class="sub" id="mSub">---</div></div><button id="mClose" class="btn small">閉じる</button></div>
+  <div class="mb"><p id="mBody">---</p><div class="celebrate"><p class="big" id="mBig">🎉</p><div class="small" id="mSmall">---</div></div></div></div></div>
+
+<div class="lottery-overlay" id="lotteryOverlay" style="display:none;"><div class="lottery-box">
+  <div class="lottery-title">🎰 追加でポイントがもらえるかも？</div><div class="lottery-subtitle">5枚のカードから1枚選んでね！</div>
+  <div class="lottery-cards" id="lotteryCards"></div><div class="lottery-result" id="lotteryResult"></div>
+  <button class="lottery-close hidden" id="lotteryClose">OK！閉じる</button></div></div>
+
+<div class="overlay" id="fileOverlay" style="display:none;">
+  <div class="modal" style="max-width:400px;">
+    <div class="mh"><div><h3>📎 ファイル提出</h3><p class="sub">複数ファイルを添付できます</p></div><button class="btn small" id="fileOverlayClose">閉じる</button></div>
+    <div class="mb">
+      <div class="drop-zone" id="dropZone"><div class="dz-icon">📂</div><div class="dz-text">ファイルをドラッグ＆ドロップ</div><div class="dz-file" id="dzFileName"></div>
+        <input type="file" id="fileInput" multiple style="display:none;"></div>
+      <div class="file-list" id="fileList"></div>
+      <button class="btn success" id="fileSubmitBtn" style="width:100%;margin-top:12px;" disabled>完了 ✅</button>
+      <button class="btn primary" id="fileSubmitDirectBtn" type="button" style="width:100%;margin-top:10px;">提出（ファイルなしでも完了）</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay" id="taskAddOverlay" style="display:none;">
+  <div class="modal" style="max-width:600px;">
+    <div class="mh"><div><h3 id="taskAddTitle">📑 新規業務追加</h3></div><button class="btn small" id="taskAddClose">閉じる</button></div>
+    <div class="mb" style="max-height:70vh;overflow-y:auto;">
+      <div class="row" style="margin-bottom:10px;"><div class="form-group"><label>業務形態</label><select id="taWorkType"><option value="出勤">出勤</option><option value="在宅">在宅</option></select></div><div class="form-group"><label>状況</label><select id="taStatus"><option>依頼前</option><option>依頼中</option><option>期限超過</option><option>完了</option><option>キャンセル</option></select></div></div>
+      <div class="row" style="margin-bottom:10px;"><div class="form-group"><label>依頼日</label><input type="date" id="taRequestDate"></div><div class="form-group"><label>期限日</label><input type="date" id="taDeadline"></div></div>
+      <div class="row" style="margin-bottom:10px;"><div class="form-group"><label>完了日</label><input type="date" id="taCompletionDate"></div><div class="form-group"><label>工数</label><input type="number" id="taManHours" min="0" value="1"></div></div>
+      <div class="form-group"><label>テキストコード</label><div id="taTextCodesArea"></div></div>
+      <div class="row" style="margin-bottom:10px;"><div class="form-group"><label>業務種類</label><select id="taTaskType"></select></div><div class="form-group"><label>担当社員</label><select id="taEmployee"></select></div></div>
+      <div class="form-group"><label>担当スタッフ</label><select id="taStaff"></select></div>
+      <div class="form-group"><label>内容</label><textarea id="taContent" placeholder="内容を記入"></textarea></div>
+      <div class="form-group"><label>備考</label><textarea id="taNote" placeholder="備考を記入" style="min-height:50px;"></textarea></div>
+      <button class="btn primary" id="taskAddSave" style="width:100%;margin-top:10px;">保存 ✅</button>
+    </div>
+  </div>
+</div>
+
+<div class="dd-edit-overlay" id="ddEditOverlay" style="display:none;">
+  <div class="dd-edit-modal">
+    <div class="mh"><div><h3 id="ddEditTitle">業務種類を編集</h3></div><button class="btn small" id="ddEditClose">閉じる</button></div>
+    <div class="mb" style="display:grid;gap:10px;">
+      <div><label>業務種類名</label><input id="ddEditName" placeholder="業務種類名"></div>
+      <div><label>単価（円）</label><input id="ddEditPrice" type="text" inputmode="numeric" placeholder="例：500"></div>
+      <button class="btn primary" id="ddEditSave" style="width:100%;">保存 ✅</button>
+    </div>
+  </div>
+</div>
+
+<!-- API Setup Overlay -->
+<div class="overlay" id="apiSetupOverlay" style="display:none;">
+  <div class="modal" style="max-width:450px;">
+    <div class="mh"><div><h3>⚙ API接続設定</h3><p class="sub">Google Apps Script Web App URL</p></div><button class="btn small" id="apiSetupClose">閉じる</button></div>
+    <div class="mb" style="text-align:left;">
+      <div style="margin-bottom:10px;"><label>API URL</label><input id="apiUrlInput" placeholder="https://script.google.com/macros/s/.../exec"></div>
+      <div id="apiSetupStatus" style="font-size:12px;margin-bottom:10px;">未設定</div>
+      <div style="display:flex;gap:8px;"><button class="btn primary" id="apiSetupSave" style="flex:1;">接続テスト＆保存</button><button class="btn danger" id="apiSetupClear">切断</button></div>
+    </div>
+  </div>
+</div>
+
+<div class="sync-badge" id="syncBar">
+  <span class="sync-dot loading" id="syncDot"></span>
+  <span id="syncMsg">接続中...</span>
+  <span id="syncTime" style="font-size:10px;color:var(--muted);margin-left:4px;"></span>
+  <button class="btn small ghost" id="syncSetup" style="font-size:10px;padding:2px 6px;margin-left:4px;">⚙</button>
+  <button class="btn small ghost" id="syncManual" style="font-size:10px;padding:2px 6px;">🔄</button>
+</div>
+
+<script src="./config.js?v=3"></script>
+<script src="./common.js?v=4"></script>
+<script src="./staff.js?v=2"></script>
 </body>
 </html>
