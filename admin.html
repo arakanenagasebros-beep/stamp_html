@@ -1,0 +1,194 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>業務管理アプリ | 管理者</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div>
+        <p class="eyebrow">Admin</p>
+        <h1 class="sidebar-title">業務管理</h1>
+      </div>
+      <nav class="nav-list">
+        <button class="nav-item is-active" data-view="dashboard">ダッシュボード</button>
+        <button class="nav-item" data-view="reports">日報管理</button>
+        <button class="nav-item" data-view="tasks">業務管理</button>
+        <button class="nav-item" data-view="monthly">月末チェック</button>
+        <button class="nav-item" data-view="notices">お知らせ管理</button>
+        <button class="nav-item" data-view="users">スタッフ管理</button>
+      </nav>
+      <div class="sidebar-footer">
+        <button type="button" class="btn" id="adminLogoutBtn">ログアウト</button>
+      </div>
+    </aside>
+
+    <main class="main-panel">
+      <header class="page-header">
+        <div>
+          <p class="eyebrow">業務管理アプリ</p>
+          <h2 id="adminPageTitle">ダッシュボード</h2>
+          <p class="muted" id="adminPageSubtitle">全体状況を確認できます。</p>
+        </div>
+        <div class="header-meta">
+          <div class="user-chip">管理者</div>
+        </div>
+      </header>
+
+      <section class="view-panel" data-panel="dashboard">
+        <div class="dashboard-grid">
+          <article class="card metrics-card">
+            <div class="metric-row">
+              <div><p class="metric-label">未提出日報</p><p class="metric-value" id="adminMissingReports">0</p></div>
+              <div><p class="metric-label">期限超過タスク</p><p class="metric-value" id="adminOverdueTasks">0</p></div>
+            </div>
+            <div class="metric-row">
+              <div><p class="metric-label">今月の提出件数</p><p class="metric-value" id="adminMonthReports">0</p></div>
+              <div><p class="metric-label">公開中お知らせ</p><p class="metric-value" id="adminActiveNotices">0</p></div>
+            </div>
+          </article>
+
+          <article class="card highlight-card">
+            <p class="section-label">月末チェック</p>
+            <h3 id="monthlyTargetText">今月の集計を確認</h3>
+            <p class="muted">学生は「出勤時給 + 在宅単価」、社会人は「時給」で集計します。</p>
+            <button type="button" class="btn primary" data-jump-view="monthly">月末チェックへ</button>
+          </article>
+        </div>
+      </section>
+
+      <section class="view-panel hidden" data-panel="reports">
+        <article class="card">
+          <div class="section-head">
+            <div><p class="section-label">日報管理</p><h3>提出一覧</h3></div>
+            <div class="filter-inline">
+              <label><span>月</span><input type="month" id="adminReportMonthFilter"></label>
+            </div>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>日付</th>
+                  <th>氏名</th>
+                  <th>区分</th>
+                  <th>勤務形態</th>
+                  <th>業務</th>
+                  <th>稼働</th>
+                  <th>数量</th>
+                </tr>
+              </thead>
+              <tbody id="adminReportTableBody"></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <section class="view-panel hidden" data-panel="tasks">
+        <article class="card">
+          <div class="section-head">
+            <div><p class="section-label">業務管理</p><h3>業務マスタ</h3></div>
+          </div>
+          <form id="taskMasterForm" class="form-grid compact-form">
+            <label><span>業務名</span><input name="name" required></label>
+            <label><span>報酬方式</span>
+              <select name="priceType">
+                <option value="hourly">時給</option>
+                <option value="piece">単価</option>
+              </select>
+            </label>
+            <label><span>単価/時給</span><input type="number" name="unitPrice" min="0" step="1" required></label>
+            <label><span>対象</span>
+              <select name="workerType">
+                <option value="all">全員</option>
+                <option value="student">学生</option>
+                <option value="employee">社会人</option>
+              </select>
+            </label>
+            <label class="col-span-2"><span>説明</span><textarea name="description" rows="3"></textarea></label>
+            <div class="col-span-2 action-row"><button class="btn primary" type="submit">業務を追加</button></div>
+          </form>
+          <div id="taskMasterMessage" class="inline-message hidden"></div>
+          <div id="adminTaskCards" class="stack-list top-gap"></div>
+        </article>
+      </section>
+
+      <section class="view-panel hidden" data-panel="monthly">
+        <article class="card">
+          <div class="section-head">
+            <div><p class="section-label">月末チェック</p><h3>スタッフ別集計</h3></div>
+            <div class="filter-inline">
+              <label><span>月</span><input type="month" id="adminMonthlyFilter"></label>
+            </div>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>氏名</th>
+                  <th>区分</th>
+                  <th>出勤時給分</th>
+                  <th>在宅単価分</th>
+                  <th>社会人時給分</th>
+                  <th>合計</th>
+                  <th>確定</th>
+                </tr>
+              </thead>
+              <tbody id="adminMonthlyTableBody"></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <section class="view-panel hidden" data-panel="notices">
+        <article class="card">
+          <div class="section-head">
+            <div><p class="section-label">お知らせ管理</p><h3>連絡事項</h3></div>
+          </div>
+          <form id="noticeForm" class="form-grid compact-form">
+            <label class="col-span-2"><span>タイトル</span><input name="title" required></label>
+            <label class="col-span-2"><span>本文</span><textarea name="body" rows="4" required></textarea></label>
+            <label><span>重要</span>
+              <select name="important"><option value="false">通常</option><option value="true">重要</option></select>
+            </label>
+            <label><span>公開状態</span>
+              <select name="published"><option value="true">公開</option><option value="false">下書き</option></select>
+            </label>
+            <div class="col-span-2 action-row"><button type="submit" class="btn primary">お知らせを保存</button></div>
+          </form>
+          <div id="noticeFormMessage" class="inline-message hidden"></div>
+          <div id="adminNoticeList" class="stack-list top-gap"></div>
+        </article>
+      </section>
+
+      <section class="view-panel hidden" data-panel="users">
+        <article class="card">
+          <div class="section-head">
+            <div><p class="section-label">スタッフ管理</p><h3>ユーザー一覧</h3></div>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>氏名</th>
+                  <th>ログインID</th>
+                  <th>区分</th>
+                  <th>スタンプ対象</th>
+                </tr>
+              </thead>
+              <tbody id="adminUsersTableBody"></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <script src="./config.js"></script>
+  <script src="./shared.js"></script>
+  <script src="./admin-app.js"></script>
+</body>
+</html>

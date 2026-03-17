@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>業務管理アプリ | スタッフ</title>
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div>
+        <p class="eyebrow">Staff</p>
+        <h1 class="sidebar-title">業務管理</h1>
+      </div>
+      <nav class="nav-list">
+        <button class="nav-item is-active" data-view="dashboard">ダッシュボード</button>
+        <button class="nav-item" data-view="report-form">日報入力</button>
+        <button class="nav-item" data-view="report-list">日報履歴</button>
+        <button class="nav-item" data-view="task-list">業務一覧</button>
+        <button class="nav-item" data-view="notices">お知らせ</button>
+      </nav>
+      <div class="sidebar-footer">
+        <button type="button" class="btn" id="staffLogoutBtn">ログアウト</button>
+      </div>
+    </aside>
+
+    <main class="main-panel">
+      <header class="page-header">
+        <div>
+          <p class="eyebrow">業務管理アプリ</p>
+          <h2 id="staffPageTitle">ダッシュボード</h2>
+          <p class="muted" id="staffPageSubtitle">今日やることを確認できます。</p>
+        </div>
+        <div class="header-meta">
+          <div class="user-chip"><span id="staffNameLabel">---</span></div>
+          <div class="status-chip" id="workerTypeBadge">---</div>
+        </div>
+      </header>
+
+      <section class="view-panel" data-panel="dashboard">
+        <div class="dashboard-grid">
+          <article class="card highlight-card">
+            <p class="section-label">今日の状況</p>
+            <h3 id="todayStatusTitle">未入力</h3>
+            <p class="muted" id="todayStatusText">本日の日報を入力してください。</p>
+            <div id="studentStampArea"></div>
+          </article>
+
+          <article class="card metrics-card">
+            <div class="metric-row">
+              <div>
+                <p class="metric-label">今月の日報数</p>
+                <p class="metric-value" id="monthReportCount">0</p>
+              </div>
+              <div>
+                <p class="metric-label">本日の勤務形態</p>
+                <p class="metric-value small" id="todayWorkMode">未入力</p>
+              </div>
+            </div>
+            <div class="metric-row">
+              <div>
+                <p class="metric-label">今月の稼働時間</p>
+                <p class="metric-value" id="monthWorkHours">0h</p>
+              </div>
+              <div>
+                <p class="metric-label">未確認お知らせ</p>
+                <p class="metric-value" id="noticeCount">0</p>
+              </div>
+            </div>
+          </article>
+        </div>
+
+        <div class="two-column-grid">
+          <article class="card">
+            <div class="section-head">
+              <div>
+                <p class="section-label">優先タスク</p>
+                <h3>自分の業務</h3>
+              </div>
+              <button type="button" class="btn ghost" data-jump-view="task-list">業務一覧へ</button>
+            </div>
+            <div id="staffDashboardTasks" class="stack-list"></div>
+          </article>
+
+          <article class="card">
+            <div class="section-head">
+              <div>
+                <p class="section-label">連絡事項</p>
+                <h3>最新のお知らせ</h3>
+              </div>
+              <button type="button" class="btn ghost" data-jump-view="notices">すべて見る</button>
+            </div>
+            <div id="staffDashboardNotices" class="stack-list"></div>
+          </article>
+        </div>
+      </section>
+
+      <section class="view-panel hidden" data-panel="report-form">
+        <article class="card form-card">
+          <div class="section-head">
+            <div>
+              <p class="section-label">日報入力</p>
+              <h3>今日の業務を記録</h3>
+            </div>
+          </div>
+
+          <form id="dailyReportForm" class="form-grid">
+            <label>
+              <span>日付</span>
+              <input type="date" name="date" required>
+            </label>
+            <label>
+              <span>勤務形態</span>
+              <select name="workMode" required>
+                <option value="office">出勤</option>
+                <option value="remote">在宅</option>
+              </select>
+            </label>
+            <label>
+              <span>開始時刻</span>
+              <input type="time" name="startTime" required>
+            </label>
+            <label>
+              <span>終了時刻</span>
+              <input type="time" name="endTime" required>
+            </label>
+            <label>
+              <span>休憩（分）</span>
+              <input type="number" name="breakMinutes" min="0" step="15" value="60">
+            </label>
+            <label>
+              <span>交通費（出勤時のみ）</span>
+              <input type="number" name="transportCost" min="0" step="1" value="0">
+            </label>
+            <label class="col-span-2">
+              <span>主な業務</span>
+              <select name="taskId" id="staffTaskSelect"></select>
+            </label>
+            <label>
+              <span>件数</span>
+              <input type="number" name="quantity" min="0" step="1" value="1">
+            </label>
+            <label>
+              <span>稼働時間（自動計算）</span>
+              <input type="text" name="workHoursLabel" readonly>
+            </label>
+            <label class="col-span-2">
+              <span>業務内容</span>
+              <textarea name="summary" rows="5" placeholder="本日の対応内容や進捗を入力"></textarea>
+            </label>
+            <label class="col-span-2">
+              <span>備考</span>
+              <textarea name="memo" rows="3" placeholder="補足があれば入力"></textarea>
+            </label>
+            <div class="col-span-2 action-row">
+              <button type="submit" class="btn primary">日報を保存</button>
+              <button type="button" class="btn" id="reportFormResetBtn">リセット</button>
+            </div>
+          </form>
+          <div id="reportFormMessage" class="inline-message hidden"></div>
+        </article>
+      </section>
+
+      <section class="view-panel hidden" data-panel="report-list">
+        <article class="card">
+          <div class="section-head">
+            <div>
+              <p class="section-label">日報履歴</p>
+              <h3>自分の提出履歴</h3>
+            </div>
+            <div class="filter-inline">
+              <label>
+                <span>月</span>
+                <input type="month" id="staffReportMonthFilter">
+              </label>
+            </div>
+          </div>
+          <div class="table-container">
+            <table>
+              <thead>
+                <tr>
+                  <th>日付</th>
+                  <th>勤務形態</th>
+                  <th>業務</th>
+                  <th>稼働</th>
+                  <th>数量</th>
+                  <th>報酬方式</th>
+                </tr>
+              </thead>
+              <tbody id="staffReportTableBody"></tbody>
+            </table>
+          </div>
+        </article>
+      </section>
+
+      <section class="view-panel hidden" data-panel="task-list">
+        <article class="card">
+          <div class="section-head">
+            <div>
+              <p class="section-label">業務一覧</p>
+              <h3>登録済みの業務</h3>
+            </div>
+          </div>
+          <div id="staffTaskCards" class="stack-list"></div>
+        </article>
+      </section>
+
+      <section class="view-panel hidden" data-panel="notices">
+        <article class="card">
+          <div class="section-head">
+            <div>
+              <p class="section-label">お知らせ</p>
+              <h3>管理者からの連絡</h3>
+            </div>
+          </div>
+          <div id="staffNoticeList" class="stack-list"></div>
+        </article>
+      </section>
+    </main>
+  </div>
+
+  <script src="./config.js"></script>
+  <script src="./shared.js"></script>
+  <script src="./staff-app.js"></script>
+</body>
+</html>
